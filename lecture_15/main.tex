@@ -101,11 +101,8 @@ The rigid robot can be translated or rotated according to its own kinematic cons
 
 While the robot motion planning problem is described in a physically intuitive ”real-world” setting (e.g., the 2D planar workspace described above), it is vital to map the problem into another space, denoted as the configuration (C-) space. The configuration space is simply the space containing the degrees of freedom of the robot. Returning to our simple example highlighted above, the configuration space contains
 the translational degrees of freedom and the rotational degrees of freedom of the robot. In this way, the 2D path planning problem in physical space is cast as a 3D path planning problem in the configuration space, with two dimensions describe the translational modes of the trajectory and one degree of freedom capturing the rotational mode of the trajectory in the planar workspace.
-
-Formally, the degrees of freedom for our rigid polygon robot, R  R2, is the set of generalized coordinates, $q = (xt, yt, q)$, where (xt, yt)  R2 are the translational coordinates, and q is the rotational coordinate. Accordingly, the configuration space consists of every combination of q which yields a unique robot placement (in this case a subset of R3). An important distinction must be made for the generalized
-coordinate describing the rotational degree of freedom; namely, q and q  2p˙k, k 2 Z describe equivalent attitudes. The configuration space in this case is actually in R2  S1, where S1 is the manifold which contains the angular displacement variable and includes the aforementioned ”equivalence” between angles that differ by integer multiples of 2p. If we relax the planar restriction in our working example,
-the angular orientation coordinates of the robot would instead be in the manifold S3. The importance of this distinction is highlighted with a simple example: consider a robot that has a current heading of q = 3p/2 rads, and we want to reconfigure the robot to heading qg = 0 subject to the constraint of avoiding a C-space obstacle at q = p. The geometry of this problem is highlighted in Figure 15.2. Now, if the equivalence between the angles 0 and 2p is not established in the definition of the configuration space,
-the robot would not be able to traverse a collision-free path to the desired heading in the configuration space (see red trajectory). Instead, since the configuration space is defined with respect to S1, the robot is able to achieve the desired heading (see green trajectory).
+ 
+Formally, the degrees of freedom for our rigid polygon robot, R R2, is the set of generalized coordinates, $q = (xt, yt, q)$, where (xt, yt) R2 are the translational coordinates, and q is the rotational coordinate. Accordingly, the configuration space consists of every combination of q which yields a unique robot placement (in this case a subset of R3). An important distinction must be made for the generalized coordinate describing the rotational degree of freedom; namely, q and q2pk, k2 Z describe equivalent attitudes. The configuration space in this case is actually in R2 S1, where S1 is the manifold which contains the angular displacement variable and includes the aforementioned ”equivalence” between angles that differ by integer multiples of 2p. If we relax the planar restriction in our working example, the angular orientation coordinates of the robot would instead be in the manifold S3. The importance of this distinction is highlighted with a simple example: consider a robot that has a current heading of q = 3p/2 rads, and we want to reconfigure the robot to heading qg = 0 subject to the constraint of avoiding a C-space obstacle at q = p. The geometry of this problem is highlighted in Figure 15.2. Now, if the equivalence between the angles 0 and 2p is not established in the definition of the configuration space, the robot would not be able to traverse a collision-free path to the desired heading in the configuration space (see red trajectory). Instead, since the configuration space is defined with respect to S1, the robot is able to achieve the desired heading (see green trajectory).
 
 \begin{figure}[h]
 \begin{center}
@@ -118,8 +115,7 @@ Note that for our simple planar workspace example, the dimensions of the physica
 vital to the motion planning problem as it allows all constraints of the complex kinematic system to be accounted for with higher-dimensional information (i.e., more coordinates).
 
 \subsection{ Planning in C-Space }
-Now that we have introduced the necessary nomenclature and addressed the important distinction between motion planning in the real (physical) space and the configuration space, we can return to our prior problem statement and re-write it in rigorous mathematical detail. Let the set of points in the workspace that are occupied by the robot in configuration q be denoted by R(q)  W. Furthermore, we can make
-the intuitive definition of collision-free motion as that set of all robot configurations which do not intersect the obstacle regions: R(q) \ O = Æ. Then the formal problem statement can be re-written as:
+Now that we have introduced the necessary nomenclature and addressed the important distinction between motion planning in the real (physical) space and the configuration space, we can return to our prior problem statement and re-write it in rigorous mathematical detail. Let the set of points in the workspace that are occupied by the robot in configuration q be denoted by R(q) W. Furthermore, we can make the intuitive definition of collision-free motion as that set of all robot configurations which do not intersect the obstacle regions: $R(q)\cap O = \emptyset$. Then the formal problem statement can be re-written as: 
 
 Problem Statement, Revisited:
 Compute the continuous path: t : [0, 1] ) fq 2 CjR(q) \ O = Æg with t(0) = qI and t(1) = qG In general, we refer to the set fq 2 CjR(q) \ O = Æg as Cf ree, which represents all possible combinations of the robot’s degrees of freedom which are collision-free. A key fact here is that, while a robot occupies physical dimensions in the real space, the robotic motion is described by a simple point in the configuration space that captures the translation degrees of freedom (of the center of mass for example) and the rotational degrees of freedom of the robot. In this way, mapping to the configuration space poses the motion planning problem as a simpler problem of finding a path for a point. An illustration of this problem is highlighted in Figure 15.3. The physical dimensionality of the robot is intrinsically captured in the definition of the configuration space (in particular, in Cf ree). This property represents a key advantage
@@ -135,16 +131,16 @@ of moving to the configuration space for robotic motion planning, as it allows t
 We now have a formal mathematical definition for the robot motion planning problem. In order to simplify the procedure, we recast the problem from the real/physical space to the configuration space. The result is that the motion planning problem now becomes a path planning problem for a single point. We have not yet, however, set up an architecture for obtaining the point path solution. In the following sections, several solution methods will be highlighted which leverage the aforementioned advantages of working in the configuration space for motion planning.
 
 \section{Combinatorial Planning}
-The goal of combinatorial planning is to find paths through the configuration space without needing approximations as shown in Figure 15.4. For low dimensional convex problems, this type of planning either provides exact solutions or none if no feasible path exists. This can allow for better performance in some cases , compared to approximation-based methods.
+The goal of combinatorial planning is to find paths through the configuration space without needing approximations as shown in Figure 15.4. For low dimensional convex problems, this type of planning either provides \textit{exact} solutions or none if no feasible path exists. This can allow for better performance in some cases , compared to approximation-based methods.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \begin{center}
 \includegraphics{fig15_4.PNG}
 \caption{Combinatorial Planning}
 \end{center}
 \end{figure}
 
-Combinatorial Planning refers to the use of all combinations of possible states in defining the robot configuration q. For example, consider the configurations used above in setting up the configuration-space: q = (xt, yt, q). In this case, the x and y position and the heading q define a unique configuration.
+Combinatorial Planning refers to the use of all combinations of possible states in defining the robot configuration $q$. For example, consider the configurations used above in setting up the configuration-space: $q = (xt, yt, q)$. In this case, the $x$ and $y$ position and the heading q define a unique configuration.
 
 Combinatorial motion planning approaches construct a roadmap, a graph G with conditions:
 1. Accessiblity: From any configuration it must always be possible to connect to the graph. For instance, q1 can be connected to s1 on the roadmap.
@@ -188,7 +184,7 @@ visibility graph represents the set of unblocked lines between vertices of obsta
 
 /subsection{3D Vertical Decomposition}
 Computing cell decomposition is much harder for higher-dimensional cases, though vertical cell decomposition is straightforward in 2D. We consider the special case where Cobs is piecewise linear and polyhedral.
-It turns out that we can extend the 2D vertical decomposition method by applying the idea of plane-sweeping to higher dimensions. Plane-sweeping refers to sweeping a plane across the space, only to stop where critical change occurs in information. In 3D, assume a polyhedral robot can translate in R3, and the obstacles are polyhedral. Thus Cobs  R3 is polyhedral as well. The 3D vertical decomposition algorithm is as follows, as demonstrated in Figure 15.7.
+It turns out that we can extend the 2D vertical decomposition method by applying the idea of plane-sweeping to higher dimensions. Plane-sweeping refers to sweeping a plane across the space, only to stop where critical change occurs in information. In 3D, assume a polyhedral robot can translate in R3, and the obstacles are polyhedral. Thus Cobs R3 is polyhedral as well. The 3D vertical decomposition algorithm is as follows, as demonstrated in Figure 15.7.
 
 Let (x, y, z) denotes a point in R3. Vertical decomposition yields 3-cell, 2-cell and 1-cell. A generic 3-cell is bounded by 6 planes, and its cross section for a fixed x yields a trapezoid or triangle in a plane parallel to the yz plane. Two sides of a 3-cell are parallel to the yz plane, and two other sides parallel to xz plane. The 3-cell is bounded above and below by two polygonal faces of Cobs.
 
@@ -208,10 +204,10 @@ quite popular in mobile robotics.
 
 \subsection{Concepts in graph search}
 We introduce the concepts which are all function of the node n (and an adjacent node n0).
- g(n) : Path cost(accumulated cost from the start node to any given node n)
- c(n, n0) : Edge traversal cost(cost from a node n to an adjacent node n0)
- h(n) : Heuristic cost(expected cost from a node n to the goal node)
- f (n) : Expected total cost(from start to goal via state n)
+g(n) : Path cost(accumulated cost from the start node to any given node n)
+c(n, n0) : Edge traversal cost(cost from a node n to an adjacent node n0)
+h(n) : Heuristic cost(expected cost from a node n to the goal node)
+f (n) : Expected total cost(from start to goal via state n)
 f (n) = g(n) + eh(n), where e is a parameter that assumes algorithm-dependent values.
 
 \subsection{Discriminator graph search}
@@ -220,7 +216,7 @@ Heuristic function unemployed
 ex) depth-first, breadth-first
 – Nonuniform traversal cost higher algorithmic complexity
 ex) Dijkstra’s algorithm
- Heuristic function employed incorporates additional information about the problem set and thus often allows for faster convergence of the search query.
+- Heuristic function employed incorporates additional information about the problem set and thus often allows for faster convergence of the search query.
 ex) e = 1 : optimal A* algorithm, e > 1 : suboptimal or greedy A* variant
 
 \subsection{Various graph search algorithms}
@@ -262,13 +258,13 @@ The idea is to progressively discover shorter paths from the origin to every oth
 
 Algorithm Step
 Step1. Remove a node q from the frontier queue and for each child q0 of q, execute step 2
-Step2. If C(q) + C(q, q0)  min(C(q0),UPPER), set C(q0) := C(q) + C(q, q0) and set q to be the parent of q0. In addition, if q0 6= qG, place q0 in frontier queue if it is not already there, while if q0 = qG, set UPPER to the new value C(q) + C(q, qG)
+Step2. If C(q) + C(q, q0) min(C(q0),UPPER), set C(q0) := C(q) + C(q, q0) and set q to be the parent of q0. In addition, if q0 6= qG, place q0 in frontier queue if it is not already there, while if q0 = qG, set UPPER to the new value C(q) + C(q, qG)
 Step3. If the frontier queue is empty, terminate, else go to step 1.
-Initialization : set the labels of all nodes to ¥, except for the label of the origin node, which is set to 0.
+Initialization : set the labels of all nodes to, except for the label of the origin node, which is set to 0.
 
 \section{Correctness and Improvements}
 Label correcting algorithms are guaranteed to find the shortest feasible path from an initial state to a goal state, given one exists. This attribute gives rise to the Correctness Theorem.
-Theorem If a feasible path exists from q1 to qG, then the algorithm terminates in finite time with C(qG) equal to the optimal cost of traversal, C(qG).
+Theorem If a feasible path exists from q1 to qG, then the algorithm terminates in finite time with C(qG) equal to the optimal cost of traversal, C(qG).
 However, computing this path can be computationally intensive especially in high-dimensional problems. This challenge arises from an explosion in the number of states expanded during the search procedure. Consider Fig 15.11, Depth-First Search and Breadth-First Search algorithms do not greedily select states from the priority queue for expansion. Hence, these algorithms search regions of the configuration space
 relatively uniformly without consideration of the direction of the expanded state to the goal. Dijkstra’s algorithm improves on Depth-First Search and Breadth-First Search by greedily selecting states from the priority queue which prevents revisiting previously visited states. However, Dijkstra’s algorithm searches for paths uniformly around the initial state, leading to wasted effort. Concentrating the search phase in regions leading to the goal state can reduce the number of states expanded during the search, speeding up the motion planning process.
 
@@ -280,16 +276,16 @@ relatively uniformly without consideration of the direction of the expanded stat
 \end{figure}
 
 \subsection{A*: Improving Dijkstra}
-The A algorithm improves on Dijkstra by including a heuristic function to the optimal ”cost-to-arrival” when checking the children of the open node for addition to the priority queue. The heuristic function models the ”cost-to-go” to the goal. This function guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
+The A* algorithm improves on Dijkstra by including a heuristic function to the optimal ”cost-to-arrival” when checking the children of the open node for addition to the priority queue. The heuristic function models the ”cost-to-go” to the goal. This function guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
 condition changes from
 
-\[ C(q) + C(q, q0) \leq UPPER ]\
+\[ C(q) + C(q, q0) \leq UPPER \]
 
 to
 
 \[ C(q) + C(q, q0) + h(q) \leq UPPER \]
 
-where h(q) is the optimal cost-to-go. The heuristic must be a positive underestimate of the true cost to the goal. The modification of the test condition reduces the number of nodes placed in the priority queue and still guarantees that an optimal path will be returned. Figure 15.12 illustrates A implemented on a grid. States in black represent
+where h(q) is the optimal cost-to-go. The heuristic must be a positive underestimate of the true cost to the goal. The modification of the test condition reduces the number of nodes placed in the priority queue and still guarantees that an optimal path will be returned. Figure 15.12 illustrates A* implemented on a grid. States in black represent
 
 obstacles while the light gray states represent nodes on the priority queue. States in dark gray represent opened nodes. The state with the minimum total estimated cost (including the heuristics cost) is selected from the priority queue for expansion.
 
@@ -305,7 +301,7 @@ obstacles while the light gray states represent nodes on the priority queue. Sta
 \printbibliography
 
 \subsubsection*{Contributors}
-Winter 2019: Warren Cheng,  \\
+Winter 2019: Warren Cheng,  Junwu Zhang\\
 Winter 2018: Ryan Richey, Hyoungju Seo, Ola Shorinwa, Josh Sullivan, Danning Sun
 
 \end{document}
