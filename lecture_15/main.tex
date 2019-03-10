@@ -17,6 +17,8 @@
 \usepackage{tikz,pgfplots}
 \usepackage{xcolor, colortbl}
 \usepackage{array}
+\usepackage[boxruled]{algorithm2e}
+
 
 \usepackage{graphics}
 \usepackage{graphicx}
@@ -31,6 +33,7 @@
 \setlength{\headsep}{0.75 in}
 \setlength{\parindent}{0 in}
 \setlength{\parskip}{0.1 in}
+\DeclareMathOperator*{\argmin}{arg\,min}
 
 
 \newcounter{lecnum}
@@ -235,7 +238,7 @@ Depth-First Search
 Depth-first search expands each node up to the deepest level of the graph, until the node has no more successors. As those nodes are expanded, their branch is removed from the graph and the search backtracks by expanding the next neighboring node of the start node until its deepest level and so on.
 Depth-First Search stores only a single path from the start nodes for each node on the path, leading to a lower memory requirement. However, previously visited nodes might be visited and the algorithm might enter redundant paths.
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
 \includegraphics{fig15_8.PNG}
 \caption{Depth First Search}
@@ -246,7 +249,7 @@ Breadth-First Search
 Breadth-first begins with the start node and explores all of its neighboring nodes. Then, for each of these nodes, it explores all their unexplored neighbors and so on.
 The search always returns the path with the fewest number of edges between the start and goal node.
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
 \includegraphics{fig15_9.PNG}
 \caption{Breadth First Search}
@@ -275,46 +278,72 @@ Initialization : set the labels of all nodes to, except for the label of the ori
 
 
 \section{Correctness and Improvements}
-Label correcting algorithms are guaranteed to find the shortest feasible path from an initial state to a goal state, given one exists. This attribute gives rise to the Correctness Theorem.
-\paragraph{Theorem} If a feasible path exists from $q_I$ to $q_G$, then the algorithm terminates in finite time with $C(q_G)$ equal to the optimal cost of traversal, $C^*(q_G)$.\\
+Label correcting algorithms are guaranteed to find the shortest feasible path from an initial state to a goal state, given one exists. This attribute gives rise to the Correctness Theorem. \vspace{-0.5cm}
+\paragraph{Theorem} If a feasible path exists from initial state $q_I$ to goal state $q_G$, then the algorithm terminates in finite time with path cost $C(q_G)$ equal to the optimal cost of traversal, $C^*(q_G)$.\\
 
-However, computing this path can be computationally intensive especially in high-dimensional problems. This challenge arises from an explosion in the number of states expanded during the search procedure. \\
-Consider Fig \ref{fig:graph_search}, Depth-First Search and Breadth-First Search algorithms do not greedily select states from the priority queue for expansion. Hence, these algorithms search regions of the configuration space
-relatively uniformly without consideration of the direction of the expanded state to the goal. Dijkstra's algorithm improves on Depth-First Search and Breadth-First Search by greedily selecting states from the priority queue which prevents revisiting previously visited states. However, Dijkstra's algorithm searches for paths uniformly around the initial state, leading to wasted effort. Concentrating the search phase in regions leading to the goal state can reduce the number of states expanded during the search, speeding up the motion planning process.
+However, computing this path can be computationally intensive, especially in high-dimensional problems. This challenge arises from an explosion in the number of states expanded during the search procedure. \\
+
+Consider Fig \ref{fig:graph_search}, Depth-First Search and Breadth-First Search algorithms do not greedily select states from a frontier queue for directed expansion. Hence, these algorithms search the configuration space without direction/relatively uniformly without considering the next state's cost or location relative to the goal. Dijkstra's algorithm improves on Depth-First Search and Breadth-First Search by greedily selecting states from the frontier queue based on cost and by not revisiting previously visited states. However, Dijkstra's algorithm does not take the goal state location into account, potentially leading to wasted effort. Concentrating the search in regions closer to the goal state may reduce the number of states expanded during the search, speeding up the motion planning process.
 
 \begin{figure}[h]
 \begin{center}
 %\includegraphics{fig15_11.PNG}
 \begin{tikzpicture}[scale=0.9, transform shape]
-\draw (0,0) circle (0.75);
+\draw (0,0) circle (0.6);
 % \draw (0,0) circle (1.0);
-\draw (0,0) circle (1.5);
+\draw (0,0) circle (1.2);
 % \draw (0,0) circle (2.0);
-\draw (0,0) circle (2.25);
-\draw (0,0) circle (3.0);
+\draw (0,0) circle (1.8);
+\draw (0,0) circle (2.4);
 
 \filldraw[yellow] (0,0) circle (2pt);
 \draw (0,0) node[anchor=west] {$s_{\text{start}}$};
-\filldraw[green] (3,0) circle (2pt);
-\draw (3,0) node[anchor=west] {$s_{\text{end}}$};
+\filldraw[green] (2.4,0) circle (2pt);
+\draw (2.4,0) node[anchor=west] {$s_{\text{end}}$};
 
-\draw (-4,0) node[anchor=west,color=red] {Wasted Effort?};
+\draw (-3,0) node[anchor=west,color=red] {Wasted Effort?};
 
 \end{tikzpicture}
-\caption{Graph Search Algorithm}
+\caption{Uniform Graph Search Algorithm Exploration}
 \label{fig:graph_search}
 \end{center}
 \end{figure}
 
 \subsection{A*: Improving Dijkstra}
-Dijkstra's algorithm orders nodes added to the frontier queue (priority queue) by optimal ``cost-to-arrival" $C(q)$. The A* algorithm improves on Dijkstra by adding a heuristic function $h(q)$ that models cost to go to the goal, i.e. A* orders by ``cost-to-arrival" + (approximate) ``cost-to-go." This heuristic function, for example, distance to goal, guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
+Dijkstra's algorithm orders nodes added to the frontier queue (priority queue) by ``cost-to-arrival" $C(q)$. The A* algorithm (given below) improves on Dijkstra by adding a heuristic function $h(q)$ that models cost to go to the goal state from state $q$, i.e. A* orders by ``cost-to-arrival" + (approximate) ``cost-to-go." This heuristic function, for example distance to goal, guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
 condition changes from
-\[ C(q) + C(q, q') \leq \text{UPPER} \]
-to
-\[ C(q) + C(q, q') + h(q') \leq \text{UPPER} \] 
-where $h(q)$ is a heuristic for the optimal ``cost-to-go" from the next state $q'$ to the goal state. The heuristic must be a positive \textit{underestimate} of the true cost to the goal. This modification of the test condition reduces the number of nodes placed in the frontier queue and still guarantees that an optimal path will be returned. In practice, it leads to much faster runtimes.
+\[ C(q) + C(q, q') \leq \text{UPPER} \qquad
+\text{to} \qquad C(q) + C(q, q') + h(q') \leq \text{UPPER}. \] 
+The heuristic must be a \textit{positive underestimate} of the true cost to the goal. This modification of the test condition reduces the number of nodes placed in the frontier queue and still guarantees that an optimal path will be returned. In practice, it leads to much faster runtimes.\\
 
-Figure \ref{fig:astar_example} illustrates A* implemented on a grid. Black states represent obstacles. Yellow states represent nodes on the frontier queue. Blue represent opened nodes. Green states indicate the final path. The state with the minimum total estimated cost (including the heuristics cost) is selected from the frontier queue for expansion.
+\SetKwInput{KwReturn}{Return}
+\begin{algorithm}[H]
+\caption{A* Algorithm}
+	\KwData{$q_{\text{init}}$, $q_{\text{goal}}$}
+	\KwResult{path}
+	$C(q) = \infty, \;\; f(q) = \infty\;\; \forall q$\;
+	$C(q_{\text{init}}) = 0$, $f(q_{\text{init}}) = h(q_{\text{goal}})$\;
+	\tcp{Init frontier queue and explored vertices}
+	OPEN = $\{q_{\text{init}}\}$, CLOSED = $\{\}$ \;
+	\While{OPEN is not empty}{
+	    $q = \argmin_{q' \in \text{OPEN}}f(q')$\;
+	    \If{$q$ == $q_{\text{goal}}$}{
+	        \KwReturn{path}
+	    }
+	    OPEN.remove($q$); CLOSE.add($q$)\;
+	    \For(\tcp*[f]{Exploration}){$q'$ in \{$q'$ | $(q,q')$ in G, $q'$ not in CLOSED\}}{
+	        OPEN.add($q'$)\;
+	        \If{$C(q') < C(q) + C(q,q')$}{
+	        continue;}
+	        $q'$.parent = $q$; $C(q') = C(q) + C(q,q')$\;
+	        $f(q') = C(q') + h(q')$
+	    }
+	}
+	\KwReturn{failure}
+\end{algorithm}
+
+
+Figure \ref{fig:astar_example} illustrates A* implemented on a grid. Black states represent obstacles. Yellow states represent nodes in the frontier queue. Blue states represent explored nodes. Green states indicate the final path. The state with the minimum total estimated cost (including the heuristics cost) is selected from the frontier queue for expansion.
 
 
 \newcolumntype{C}[1]{%
@@ -323,22 +352,22 @@ Figure \ref{fig:astar_example} illustrates A* implemented on a grid. Black state
  <{\egroup}}  
 
 \newcommand{\stategh}[2]{
-\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+\vspace{0.1cm}c={#1}\\ \vspace{0.3cm}h={#2}
 }
 
 \newcommand{\stateghblank}[2]{
 }
 
 \newcommand{\stateghopen}[2]{
-\cellcolor{blue}\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+\cellcolor{blue}\vspace{0.1cm}c={#1}\\ \vspace{0.3cm}h={#2}
 }
 
 \newcommand{\stateghpq}[2]{
-\cellcolor{yellow}\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+\cellcolor{yellow}\vspace{0.1cm}c={#1}\\ \vspace{0.3cm}h={#2}
 }
 
 \newcommand{\stateghpath}[2]{
-\cellcolor{green}\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+\cellcolor{green}\vspace{0.1cm}c={#1}\\ \vspace{0.3cm}h={#2}
 }
 
 \begin{figure}[h!]
@@ -455,13 +484,15 @@ Figure \ref{fig:astar_example} illustrates A* implemented on a grid. Black state
 \end{center}
 \end{figure}
 
-\subsection{Benefits and Drawbacks of Graph-based Approach}
+
+\subsection{Benefits and Drawbacks of Graph-based Approaches}
 The graph-based approaches are simple, easy to use, and fast for some problems. However, this approach presents two drawbacks.
 \begin{enumerate}
-\item These algorithms are resolution dependent, and this resolution is decided a priori. We might find that this resolution is not fine enough to uncover a path or the best path for the original motion planning problem. 
-\item These approaches ignore many robot degrees of freedom. Usually, we need to construct a grid with number of dimensions equal to the number of degrees of freedom of our robot. Thus, the number of gird cells increase exponentially, which also increases the number of neighbors of each vertex exponentially in the number of degrees of freedom. Thus, the graph-based approaches become less effective for high dimensional problems.
-
+\item These algorithms are resolution dependent, and this resolution is decided a priori. We might find that this resolution is not fine enough to uncover the best path or any path at all for the \textit{original} motion planning problem (for example, if a narrow passage is missed by the discretization).
+\item These approaches don't scale well with robot degrees of freedom. Usually, we need to construct a grid with number of dimensions equal to the number of degrees of freedom of our robot. Thus, the number of gird cells increase exponentially, which also increases the number of neighbors of each vertex exponentially in the number of degrees of freedom. Thus, the graph-based approaches become less effective for high dimensional problems (more than 3 DOFs).
 \end{enumerate}
+
+
 
 
 \printbibliography
