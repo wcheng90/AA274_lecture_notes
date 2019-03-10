@@ -279,7 +279,7 @@ Label correcting algorithms are guaranteed to find the shortest feasible path fr
 \paragraph{Theorem} If a feasible path exists from $q_I$ to $q_G$, then the algorithm terminates in finite time with $C(q_G)$ equal to the optimal cost of traversal, $C^*(q_G)$.\\
 
 However, computing this path can be computationally intensive especially in high-dimensional problems. This challenge arises from an explosion in the number of states expanded during the search procedure. \\
-Consider Fig 15.11, Depth-First Search and Breadth-First Search algorithms do not greedily select states from the priority queue for expansion. Hence, these algorithms search regions of the configuration space
+Consider Fig \ref{fig:graph_search}, Depth-First Search and Breadth-First Search algorithms do not greedily select states from the priority queue for expansion. Hence, these algorithms search regions of the configuration space
 relatively uniformly without consideration of the direction of the expanded state to the goal. Dijkstra's algorithm improves on Depth-First Search and Breadth-First Search by greedily selecting states from the priority queue which prevents revisiting previously visited states. However, Dijkstra's algorithm searches for paths uniformly around the initial state, leading to wasted effort. Concentrating the search phase in regions leading to the goal state can reduce the number of states expanded during the search, speeding up the motion planning process.
 
 \begin{figure}[h]
@@ -302,18 +302,19 @@ relatively uniformly without consideration of the direction of the expanded stat
 
 \end{tikzpicture}
 \caption{Graph Search Algorithm}
+\label{fig:graph_search}
 \end{center}
 \end{figure}
 
 \subsection{A*: Improving Dijkstra}
-Dijkstra's algorithm orders nodes added to the priority queue by optimal ``cost-to-arrival." The A* algorithm improves on Dijkstra by adding a heuristic function that models cost to go to the goal to the optimal ``cost-to-arrival," i.e. A* orders by ``cost-to-arrival" + ``cost-to-go". This heuristic function guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
+Dijkstra's algorithm orders nodes added to the frontier queue (priority queue) by optimal ``cost-to-arrival" $C(q)$. The A* algorithm improves on Dijkstra by adding a heuristic function $h(q)$ that models cost to go to the goal, i.e. A* orders by ``cost-to-arrival" + (approximate) ``cost-to-go." This heuristic function, for example, distance to goal, guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
 condition changes from
 \[ C(q) + C(q, q') \leq \text{UPPER} \]
 to
 \[ C(q) + C(q, q') + h(q') \leq \text{UPPER} \] 
-where $h(q)$ is the optimal cost-to-go. The heuristic must be a positive underestimate of the true cost to the goal. This modification of the test condition reduces the number of nodes placed in the priority queue and still guarantees that an optimal path will be returned.
+where $h(q)$ is a heuristic for the optimal ``cost-to-go" from the next state $q'$ to the goal state. The heuristic must be a positive \textit{underestimate} of the true cost to the goal. This modification of the test condition reduces the number of nodes placed in the frontier queue and still guarantees that an optimal path will be returned. In practice, it leads to much faster runtimes.
 
-Figure 15.12 illustrates A* implemented on a grid. Black states represent obstacles. Yellow states represent nodes on the priority queue. Blue represent opened nodes. Green states indicate the final path. The state with the minimum total estimated cost (including the heuristics cost) is selected from the priority queue for expansion.
+Figure \ref{fig:astar_example} illustrates A* implemented on a grid. Black states represent obstacles. Yellow states represent nodes on the frontier queue. Blue represent opened nodes. Green states indicate the final path. The state with the minimum total estimated cost (including the heuristics cost) is selected from the frontier queue for expansion.
 
 
 \newcolumntype{C}[1]{%
@@ -449,11 +450,18 @@ Figure 15.12 illustrates A* implemented on a grid. Black states represent obstac
     \hline
 \end{tabular}
 }
-
-\caption{A* Algorithm}
+\caption{A* Algorithm Example}
+\label{fig:astar_example}
 \end{center}
 \end{figure}
 
+\subsection{Benefits and Drawbacks of Graph-based Approach}
+The graph-based approaches are simple, easy to use, and fast for some problems. However, this approach presents two drawbacks.
+\begin{enumerate}
+\item These algorithms are resolution dependent, and this resolution is decided a priori. We might find that this resolution is not fine enough to uncover a path or the best path for the original motion planning problem. 
+\item These approaches ignore many robot degrees of freedom. Usually, we need to construct a grid with number of dimensions equal to the number of degrees of freedom of our robot. Thus, the number of gird cells increase exponentially, which also increases the number of neighbors of each vertex exponentially in the number of degrees of freedom. Thus, the graph-based approaches become less effective for high dimensional problems.
+
+\end{enumerate}
 
 
 \printbibliography
