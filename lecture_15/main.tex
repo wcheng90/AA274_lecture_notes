@@ -14,6 +14,10 @@
 \usepackage[backend=biber]{biblatex}
 \bibliography{./lecture_15_biblio.bib}
 
+\usepackage{tikz,pgfplots}
+\usepackage{xcolor, colortbl}
+\usepackage{array}
+
 \usepackage{graphics}
 \usepackage{graphicx}
 \usepackage{subcaption}
@@ -269,36 +273,183 @@ Step2. If C(q) + C(q, q0) min(C(q0),UPPER), set C(q0) := C(q) + C(q, q0) and set
 Step3. If the frontier queue is empty, terminate, else go to step 1.
 Initialization : set the labels of all nodes to, except for the label of the origin node, which is set to 0.
 
+
 \section{Correctness and Improvements}
 Label correcting algorithms are guaranteed to find the shortest feasible path from an initial state to a goal state, given one exists. This attribute gives rise to the Correctness Theorem.
-Theorem If a feasible path exists from q1 to qG, then the algorithm terminates in finite time with C(qG) equal to the optimal cost of traversal, C(qG).
-However, computing this path can be computationally intensive especially in high-dimensional problems. This challenge arises from an explosion in the number of states expanded during the search procedure. Consider Fig 15.11, Depth-First Search and Breadth-First Search algorithms do not greedily select states from the priority queue for expansion. Hence, these algorithms search regions of the configuration space
-relatively uniformly without consideration of the direction of the expanded state to the goal. Dijkstra’s algorithm improves on Depth-First Search and Breadth-First Search by greedily selecting states from the priority queue which prevents revisiting previously visited states. However, Dijkstra’s algorithm searches for paths uniformly around the initial state, leading to wasted effort. Concentrating the search phase in regions leading to the goal state can reduce the number of states expanded during the search, speeding up the motion planning process.
+\paragraph{Theorem} If a feasible path exists from $q_I$ to $q_G$, then the algorithm terminates in finite time with $C(q_G)$ equal to the optimal cost of traversal, $C^*(q_G)$.\\
+
+However, computing this path can be computationally intensive especially in high-dimensional problems. This challenge arises from an explosion in the number of states expanded during the search procedure. \\
+Consider Fig 15.11, Depth-First Search and Breadth-First Search algorithms do not greedily select states from the priority queue for expansion. Hence, these algorithms search regions of the configuration space
+relatively uniformly without consideration of the direction of the expanded state to the goal. Dijkstra's algorithm improves on Depth-First Search and Breadth-First Search by greedily selecting states from the priority queue which prevents revisiting previously visited states. However, Dijkstra's algorithm searches for paths uniformly around the initial state, leading to wasted effort. Concentrating the search phase in regions leading to the goal state can reduce the number of states expanded during the search, speeding up the motion planning process.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics{fig15_11.PNG}
+%\includegraphics{fig15_11.PNG}
+\begin{tikzpicture}[scale=0.9, transform shape]
+\draw (0,0) circle (0.75);
+% \draw (0,0) circle (1.0);
+\draw (0,0) circle (1.5);
+% \draw (0,0) circle (2.0);
+\draw (0,0) circle (2.25);
+\draw (0,0) circle (3.0);
+
+\filldraw[yellow] (0,0) circle (2pt);
+\draw (0,0) node[anchor=west] {$s_{\text{start}}$};
+\filldraw[green] (3,0) circle (2pt);
+\draw (3,0) node[anchor=west] {$s_{\text{end}}$};
+
+\draw (-4,0) node[anchor=west,color=red] {Wasted Effort?};
+
+\end{tikzpicture}
 \caption{Graph Search Algorithm}
 \end{center}
 \end{figure}
 
 \subsection{A*: Improving Dijkstra}
-The A* algorithm improves on Dijkstra by including a heuristic function to the optimal ”cost-to-arrival” when checking the children of the open node for addition to the priority queue. The heuristic function models the ”cost-to-go” to the goal. This function guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
+Dijkstra's algorithm orders nodes added to the priority queue by optimal ``cost-to-arrival." The A* algorithm improves on Dijkstra by adding a heuristic function that models cost to go to the goal to the optimal ``cost-to-arrival," i.e. A* orders by ``cost-to-arrival" + ``cost-to-go". This heuristic function guides exploration towards the region of the configuration space close to the goal, leading to faster computations as less states are expanded. Thus, the test
 condition changes from
-
-\[ C(q) + C(q, q0) \leq UPPER \]
-
+\[ C(q) + C(q, q') \leq \text{UPPER} \]
 to
+\[ C(q) + C(q, q') + h(q') \leq \text{UPPER} \] 
+where $h(q)$ is the optimal cost-to-go. The heuristic must be a positive underestimate of the true cost to the goal. This modification of the test condition reduces the number of nodes placed in the priority queue and still guarantees that an optimal path will be returned.
 
-\[ C(q) + C(q, q0) + h(q) \leq UPPER \]
+Figure 15.12 illustrates A* implemented on a grid. Black states represent obstacles. Yellow states represent nodes on the priority queue. Blue represent opened nodes. Green states indicate the final path. The state with the minimum total estimated cost (including the heuristics cost) is selected from the priority queue for expansion.
 
-where h(q) is the optimal cost-to-go. The heuristic must be a positive underestimate of the true cost to the goal. The modification of the test condition reduces the number of nodes placed in the priority queue and still guarantees that an optimal path will be returned. Figure 15.12 illustrates A* implemented on a grid. States in black represent
 
-obstacles while the light gray states represent nodes on the priority queue. States in dark gray represent opened nodes. The state with the minimum total estimated cost (including the heuristics cost) is selected from the priority queue for expansion.
+\newcolumntype{C}[1]{%
+ >{\vbox to 5ex\bgroup\vfill\centering}%
+ m{#1}%
+ <{\egroup}}  
 
-\begin{figure}[h]
+\newcommand{\stategh}[2]{
+\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+}
+
+\newcommand{\stateghblank}[2]{
+}
+
+\newcommand{\stateghopen}[2]{
+\cellcolor{blue}\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+}
+
+\newcommand{\stateghpq}[2]{
+\cellcolor{yellow}\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+}
+
+\newcommand{\stateghpath}[2]{
+\cellcolor{green}\vspace{0.1cm}g={#1}\\ \vspace{0.3cm}h={#2}
+}
+
+\begin{figure}[h!]
 \begin{center}
-\includegraphics[scale=0.90]{fig15_12.PNG}
+% \includegraphics[scale=0.90]{fig15_12.PNG}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    goal & \cellcolor{black} & \stateghpq{1.4}{2.0} & \stateghpq{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghblank{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stateghblank{3.4}{2.0} & \stateghblank{2.4}{2.4} & \stateghpq{1.4}{2.8} & \stateghpq{1.0}{3.8} \tabularnewline
+    \hline
+    \stateghblank{3.8}{3.0} & \stateghblank{2.8}{3.4} & \stateghblank{2.4}{3.8} & \stateghblank{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stategh{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghblank{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stateghblank{3.4}{2.0} & \stateghblank{2.4}{2.4} & \stategh{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stateghblank{3.8}{3.0} & \stateghblank{2.8}{3.4} & \stateghblank{2.4}{3.8} & \stateghblank{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stateghopen{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghblank{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stateghblank{3.4}{2.0} & \stateghblank{2.4}{2.4} & \stategh{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stateghblank{3.8}{3.0} & \stateghblank{2.8}{3.4} & \stateghblank{2.4}{3.8} & \stateghblank{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+\vspace{0.3cm}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stateghopen{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghblank{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stateghblank{3.4}{2.0} & \stateghpq{2.4}{2.4} & \stateghopen{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stateghblank{3.8}{3.0} & \stateghpq{2.8}{3.4} & \stateghpq{2.4}{3.8} & \stateghpq{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}\\
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stateghopen{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghpq{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stateghpq{3.4}{2.0} & \stateghopen{2.4}{2.4} & \stateghopen{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stateghpq{3.8}{3.0} & \stategh{2.8}{3.4} & \stategh{2.4}{3.8} & \stategh{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    \cellcolor{yellow}goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stateghopen{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghopen{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stategh{3.4}{2.0} & \stateghopen{2.4}{2.4} & \stateghopen{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stategh{3.8}{3.0} & \stategh{2.8}{3.4} & \stategh{2.4}{3.8} & \stategh{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+\vspace{0.3cm}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    \cellcolor{blue}goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stateghopen{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghopen{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{blue}{start} \tabularnewline
+    \hline
+    \stategh{3.4}{2.0} & \stateghopen{2.4}{2.4} & \stateghopen{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stategh{3.8}{3.0} & \stategh{2.8}{3.4} & \stategh{2.4}{3.8} & \stategh{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+\resizebox{.24\columnwidth}{!}{
+\begin{tabular}{|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+    \hline
+    \cellcolor{green}goal & \cellcolor{black} & \stateghopen{1.4}{2.0} & \stateghopen{1.0}{3.0}  \tabularnewline
+    \hline
+    \stateghpath{3.8}{1.0} & \cellcolor{black}& \cellcolor{black} & \cellcolor{green}{start} \tabularnewline
+    \hline
+    \stategh{3.4}{2.0} & \stateghpath{2.4}{2.4} & \stateghpath{1.4}{2.8} & \stategh{1.0}{3.8} \tabularnewline
+    \hline
+    \stategh{3.8}{3.0} & \stategh{2.8}{3.4} & \stategh{2.4}{3.8} & \stategh{2.8}{4.2}\tabularnewline
+    \hline
+\end{tabular}
+}
+
 \caption{A* Algorithm}
 \end{center}
 \end{figure}
@@ -308,7 +459,7 @@ obstacles while the light gray states represent nodes on the priority queue. Sta
 \printbibliography
 
 \subsubsection*{Contributors}
-Winter 2019: Warren Cheng,  Junwu Zhang\\
+Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis\\
 Winter 2018: Ryan Richey, Hyoungju Seo, Ola Shorinwa, Josh Sullivan, Danning Sun
 
 \end{document}
