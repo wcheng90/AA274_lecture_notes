@@ -143,12 +143,12 @@ For low dimensional convex problems, this type of planning either provides \text
 \end{center}
 \end{figure}
 
-Combinatorial Planning refers to the use of all combinations of possible states in defining the robot configuration $q$. For example, consider the configurations used above in setting up the configuration-space: $q = (xt, yt, q)$. In this case, the $x$ and $y$ position and the heading $\theta$ define a unique configuration.
+Combinatorial Planning refers to the use of all combinations of possible states in defining the robot configuration $q$. For example, consider the configurations used above in setting up the configuration-space: $q = (x_t, y_t, \theta)$. In this case, the $x$ and $y$ position and the heading $\theta$ define a unique configuration.
 
 Combinatorial motion planning approaches construct a roadmap, a graph $G$ which should preserve:
 
 \begin{enumerate}
-	\item \textbf{Accessiblity}: It is always possible to connect some $q$ to the roadmap. For instance, $q_I$ can be connected to $s_1$ and $q_IG$ can be connected to $s_2$ on the roadmap.
+	\item \textbf{Accessiblity}: It is always possible to connect some $q$ to the roadmap. For instance, $q_I$ can be connected to $s_1$ and $q_G$ can be connected to $s_2$ on the roadmap.
 	\item \textbf{Connectivity}: If there is a path between two configurations $q_I$ and $q_G$, then there exists a path on the roadmap between $s_1$ and $s_2$.
 \end{enumerate}
 
