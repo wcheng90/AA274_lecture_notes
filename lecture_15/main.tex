@@ -121,7 +121,7 @@ Problem Statement, Revisited:
 Compute the continuous path: t : [0, 1] ) fq 2 CjR(q) \ O = Æg with t(0) = qI and t(1) = qG In general, we refer to the set fq 2 CjR(q) \ O = Æg as Cf ree, which represents all possible combinations of the robot’s degrees of freedom which are collision-free. A key fact here is that, while a robot occupies physical dimensions in the real space, the robotic motion is described by a simple point in the configuration space that captures the translation degrees of freedom (of the center of mass for example) and the rotational degrees of freedom of the robot. In this way, mapping to the configuration space poses the motion planning problem as a simpler problem of finding a path for a point. An illustration of this problem is highlighted in Figure 15.3. The physical dimensionality of the robot is intrinsically captured in the definition of the configuration space (in particular, in Cf ree). This property represents a key advantage
 of moving to the configuration space for robotic motion planning, as it allows the same general planning problem formulation (i.e., path planning for a point) to be equally applicable to myriad dynamical systems.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \begin{center}
 \includegraphics{fig15_3.PNG}
 \caption{Robotic motion planning as a point path planning problem in C-space.}
@@ -131,22 +131,29 @@ of moving to the configuration space for robotic motion planning, as it allows t
 We now have a formal mathematical definition for the robot motion planning problem. In order to simplify the procedure, we recast the problem from the real/physical space to the configuration space. The result is that the motion planning problem now becomes a path planning problem for a single point. We have not yet, however, set up an architecture for obtaining the point path solution. In the following sections, several solution methods will be highlighted which leverage the aforementioned advantages of working in the configuration space for motion planning.
 
 \section{Combinatorial Planning}
-The goal of combinatorial planning is to find paths through the configuration space without needing approximations as shown in Figure 15.4. For low dimensional convex problems, this type of planning either provides \textit{exact} solutions or none if no feasible path exists. This can allow for better performance in some cases , compared to approximation-based methods.
+The goal of combinatorial planning is to find paths through the configuration space without needing approximations. For example, Figure \ref{fig:15_4} represents a point robot in a plane. The key idea is to compute a roadmap, which is a graph in which each vertex is a configuration in $C_\text{free}$ and each edge is a path through $C_\text{free}$ that connects a pair of vertices.
+
+For low dimensional convex problems, this type of planning either provides \textit{exact} solutions or none if no feasible path exists. This can allow for better performance in some cases, compared to approximation-based methods.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics{fig15_4.PNG}
+\includegraphics[width=0.6\textwidth]{fig15_4.PNG}
 \caption{Combinatorial Planning}
+\label{fig:15_4}
 \end{center}
 \end{figure}
 
-Combinatorial Planning refers to the use of all combinations of possible states in defining the robot configuration $q$. For example, consider the configurations used above in setting up the configuration-space: $q = (xt, yt, q)$. In this case, the $x$ and $y$ position and the heading q define a unique configuration.
+Combinatorial Planning refers to the use of all combinations of possible states in defining the robot configuration $q$. For example, consider the configurations used above in setting up the configuration-space: $q = (xt, yt, q)$. In this case, the $x$ and $y$ position and the heading $\theta$ define a unique configuration.
 
-Combinatorial motion planning approaches construct a roadmap, a graph G with conditions:
-1. Accessiblity: From any configuration it must always be possible to connect to the graph. For instance, q1 can be connected to s1 on the roadmap.
+Combinatorial motion planning approaches construct a roadmap, a graph $G$ which should preserve:
 
-2. Connectivity: If there is a path between two configurations q1 and q2, then there exists a path on the roadmap between s1 and s2.
-The roadmap essentially provides a discrete representation of the continuous problem. Any original connectivity information is maintained across the mapping.
+\begin{enumerate}
+	\item \textbf{Accessiblity}: It is always possible to connect some $q$ to the roadmap. For instance, $q_I$ can be connected to $s_1$ and $q_IG$ can be connected to $s_2$ on the roadmap.
+	\item \textbf{Connectivity}: If there is a path between two configurations $q_I$ and $q_G$, then there exists a path on the roadmap between $s_1$ and $s_2$.
+\end{enumerate}
+
+The roadmap essentially provides a discrete representation of the continuous problem without losing any of the original connectivity information needed to solve it.
+
 The typical approach involves cell decomposition. There are requirements that the cells be easy to traverse, the decomposition be easy to compute, and the cell adjacencies be straightforward to determine.
 
 \section{Cell Decomposition}
