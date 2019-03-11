@@ -164,30 +164,30 @@ The roadmap essentially provides a discrete representation of the continuous pro
 The typical approach involves cell decomposition. There are requirements that the cells be easy to traverse, the decomposition be easy to compute, and the cell adjacencies be straightforward to determine.
 
 \section{Cell Decomposition}
-In order to pick the roadmap, a discrete representation of the configuration space, the environment needs to be decomposed in a way where connectivity of the environment is captured. Cell decomposition refers to algorithms that partitions Cf ree into a finite set of regions called cells. Three properties should be satisfied by cell decomposition, to reduce motion planning problem to a graph search problem:
+In order to pick the roadmap the environment needs to be decomposed in a way where connectivity between subspaces of the environment is captured. The most widely used method for representing an environment is cell decomposition which entails making a discrete representation of the configuration space. Cell decomposition refers to a set algorithms that partitions $C_{free}$ into a finite set of regions called cells. Three properties should be satisfied by cell decomposition, to reduce motion planning problem to a graph search problem:
 
-1. Each cell should be easy to traverse. For instance, for ideal convex cell, any points inside it must be connected by a line segment.
-2. Decomposition should be easy to compute.
-3. Adjacencies between cells should be straightforward to determine, in order to build the roadmap.
+\begin{enumerate}
+\item Each cell should be easy to traverse and ideally convex.
+\item Decomposition should be easy to compute.
+\item Adjacencies between cells should be straightforward to determine, in order to build the roadmap.
+\end{enumerate}
 
 \subsection{2D Decomposition}
-We first take a look at 2D vertical cell decomposition, which partitions Cf ree into a finite collection of 2-cells and 1-cells, where k-cell refers to a k-dimensional cell. Each 2-cell is either a trapezoid or a triangle.
-Each 1-cell is a vertical segment that serves as the border of two 2-cells. Figure 15.5 shows an environment demonstrated as a configuration space, with free configuration space Cf ree represented as the white regions and obstacle space Cobs represented as the dark regions. In other words, those configurations for the robot would lead to collision. Though the planning problem is 2-dimensional, the robot configuration space is 3-dimensional, as robot heading affects whether it collides with obstacles as well.
+We first take a look at 2D vertical cell decomposition, which partitions $C_{free}$ into a finite collection of 2-cells and 1-cells, where k-cell refers to a k-dimensional cell. Each 2-cell is either a trapezoid or a triangle.
+Each 1-cell is a vertical segment that serves as the border of two 2-cells. Figure 15.5 shows an environment represented as a configuration space, with free configuration space, $C_{free}$, denoted as the white regions and obstacle space, $C_{obs}$, denoted as the dark regions. Though the planning problem is 2-dimensional, the robot configuration space is 3-dimensional, as the heading of the robot adds another degree of freedom.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics{fig15_5.PNG}
-\caption{Example of 2D Cell Decomposition and Roadmap Extraction given qI and qG.}
+\caption{Example of 2D Cell Decomposition and Roadmap Extraction given $q_{I}$ and $q_{G}$.}
 \end{center}
 \end{figure}
 
-Assume the obstacle space is polygonal, then vertical cell decomposition works as follows. Let P denote the set of vertices used to define Cobs. For each vertex p 2 P, extend rays upwards and downwards through Cf ree, until Cobs is reached. Every intersection forms a cell, and thus the environment becomes a set of cells. As all cells have shapes of either triangles or trapezoids, they form convex sets. Hence, if
-we put a roadmap node randomly inside a cell, all other configurations within this cell can be connected to the roadmap point. In consequence, connectivity of the environment is preserved through this cell decomposition.
+Assume the obstacle space is polygonal, then vertical cell decomposition works as follows. Let P denote the set of vertices used to define $C_{obs}$. For each vertex $p_{i} \in P$, extend rays upwards and downwards through $C_{free}$, until $C_{obs}$ is reached. Every intersection forms a cell, and thus the environment becomes a set of cells. All cells are triangles or trapezoids, so they are convex. Hence, if we put a roadmap node randomly inside a cell, all other configurations within this cell can be connected to the roadmap point without intersecting $C_{obs}$. It follows that connectivity of the environment is preserved through this cell decomposition.
 
-Now that we have different cells that compose the environment. One possible way is to place roadmap sample point at the centroid of each cell and at midpoint of each boundary. Once the roadmap is constructed, given any initial and goal configurations qI and qG, a path can always be extracted from the roadmap. To form a path from a roadmap, searching algorithms are needed, which will be introduced in section 15.5.
+Now that we have different cells that compose the environment, the roadmap can be built by placing a sample point at the centroid of each cell and at midpoint of each boundary. Once the roadmap is constructed, given an initial and goal configuration $q_I$ and $q_G$, a path can always be extracted from the roadmap. To form a path from a roadmap, searching algorithms are needed, which will be introduced in section 15.5. The convex properties of the cells and placement of the sample points guarantee that if a path exists it will not intersect $C_{obs}$ (i.e. no collision will occur). 
 
-Other ways of constructing the roadmap are based on different requirements. Figure 15.6 shows two requirements: maximum clearance and minimum distance. Specifically, if maximum clearance from Cobs is required, especially in obstacle avoidance problem, we would like to place roadmap points along the middle of the tunnel representing the boundary of Cobs, meaning equidistant from both walls. Voronoi diagram is used to compute the roadmap by connecting qI and qG along edges of the constructed diagram in polygons. In the other case where the shortest path is the goal, a visibility graph can be used. A
-visibility graph represents the set of unblocked lines between vertices of obstacles, qI and qG. Usually shortest paths tend to graze the corners of Cobs as much as possible.
+Other ways of constructing the roadmap are based on different requirements. Figure 15.6 shows two requirements: maximum clearance and minimum distance. Specifically, if maximum clearance from $C_{obs}$ is required, we would like to place roadmap points along the middle of the tunnel that represents the boundary of $C_{obs}$. A voronoi diagram is used to compute the roadmap by connecting $q_I$ and $q_G$ along edges of the constructed diagram in polygons. In the other case where the shortest path is the goal, a visibility graph can be used. A visibility graph represents the set of unblocked lines between vertices of obstacles, $q_I$ and $q_G$. Usually shortest paths tend to graze the corners of $C_{obs}$ as much as possible.
 
 \begin{figure}[h]
 \begin{center}
@@ -196,25 +196,28 @@ visibility graph represents the set of unblocked lines between vertices of obsta
 \end{center}
 \end{figure}
 
-/subsection{3D Vertical Decomposition}
-Computing cell decomposition is much harder for higher-dimensional cases, though vertical cell decomposition is straightforward in 2D. We consider the special case where Cobs is piecewise linear and polyhedral.
-It turns out that we can extend the 2D vertical decomposition method by applying the idea of plane-sweeping to higher dimensions. Plane-sweeping refers to sweeping a plane across the space, only to stop where critical change occurs in information. In 3D, assume a polyhedral robot can translate in R3, and the obstacles are polyhedral. Thus Cobs R3 is polyhedral as well. The 3D vertical decomposition algorithm is as follows, as demonstrated in Figure 15.7.
+\subsection{3D Vertical Decomposition}
+Computing cell decomposition is much harder for higher-dimensional cases, though vertical cell decomposition is straightforward in 2D. We consider the special case where $C_{obs}$ is piecewise linear and polyhedral.
 
-Let (x, y, z) denotes a point in R3. Vertical decomposition yields 3-cell, 2-cell and 1-cell. A generic 3-cell is bounded by 6 planes, and its cross section for a fixed x yields a trapezoid or triangle in a plane parallel to the yz plane. Two sides of a 3-cell are parallel to the yz plane, and two other sides parallel to xz plane. The 3-cell is bounded above and below by two polygonal faces of Cobs.
+It turns out that we can extend the 2D vertical decomposition method by applying the idea of plane-sweeping to higher dimensions. Plane-sweeping refers to sweeping a plane across the space, only to stop where critical change occurs in information. In 3D, assume a polyhedral robot can translate in $\mathbb{R}^3$, and the obstacles are polyhedral. Thus $C_{obs} \in \mathbb{R}^3$ is polyhedral as well. The 3D vertical decomposition algorithm is as follows (shown in Figure 15.7).
 
-The general idea is to sweep a plane perpendicular to x axis, where each fixed value of x produces a 2D polygonal slice of Cobs. Three example slices are shown in the bottom of Figure 15.7. Each slice is parallel to yz plane and simplify the 3D problem to a problem that can be solved by 2D vertical decomposition method. The middle slice shows the condition where the sweeping plane just encounters a vertex of a convex polyhedron, represented as a dot. This corresponds to an x value in interest, as critical change
+Let (x, y, z) denotes a point in $\mathbb{R}^3$. Vertical decomposition yields 3-cell, 2-cell and 1-cell. A generic 3-cell is bounded by 6 planes, and its cross section for a fixed x yields a trapezoid or triangle in a plane parallel to the yz plane. Two sides of a 3-cell are parallel to the yz plane, and two other sides parallel to xz plane. The 3-cell is bounded above and below by two polygonal faces of $C_{obs}$.
+
+The general idea is to sweep a plane perpendicular to x axis, where each fixed value of x produces a 2D polygonal slice of $C_{obs}$. Three example slices are shown in the bottom of Figure 15.7. Each slice is parallel to yz plane and simplify the 3D problem to a problem that can be solved by 2D vertical decomposition method. The middle slice shows the condition where the sweeping plane just encounters a vertex of a convex polyhedron, represented as a dot. This corresponds to an x value in interest, as critical change
 must occur in the slices. Hence, the 3D cell decomposition can be developed incrementally by sweeping through planes to update 2D vertical cell decomposition, in order to incorporate critical changes. To construct a roadmap, sample points are placed at center of each 3-cell and 2-cell. Edges are added to the roadmap by connecting each 3-cell to an adjacent 2-cell.
 
-\section{Graph-Search Algorithms}
-Suppose that our environment map has been converted into a connectivity graph using one of the graph generation methods presented earlier. Whatever map representation is chosen, the goal of path planning is to find the best path in the map’s connectivity graph between the start and the goal, where best refers to the selected optimization criteria. In this section, we present several search algorithms that have become
-quite popular in mobile robotics.
-
-\begin{figure}[h]
+\begin{figure}[H]
 \begin{center}
 \includegraphics{fig15_7.PNG}
 \caption{3D Cell Decomposition Extended from 2D.}
 \end{center}
 \end{figure}
+
+\section{Graph-Search Algorithms}
+Suppose that our environment map has been converted into a connectivity graph using one of the graph generation methods presented earlier. Whatever map representation is chosen, the goal of path planning is to find the best path in the map’s connectivity graph between the start and the goal, where best refers to the selected optimization criteria. In this section, we present several search algorithms that have become
+quite popular in mobile robotics.
+
+
 
 \subsection{Concepts in graph search}
 We introduce the concepts which are all function of the node n (and an adjacent node n0).
@@ -498,7 +501,7 @@ The graph-based approaches are simple, easy to use, and fast for some problems. 
 \printbibliography
 
 \subsubsection*{Contributors}
-Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis\\
+Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis, Jeremy Crowley\\
 Winter 2018: Ryan Richey, Hyoungju Seo, Ola Shorinwa, Josh Sullivan, Danning Sun
 
 \end{document}
