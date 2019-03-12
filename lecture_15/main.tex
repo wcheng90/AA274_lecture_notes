@@ -228,71 +228,85 @@ must occur in the slices. Hence, the 3D cell decomposition can be developed incr
 \end{figure}
 
 \section{Graph-Search Algorithms}
-Suppose that our environment map has been converted into a connectivity graph using one of the graph generation methods presented earlier. Whatever map representation is chosen, the goal of path planning is to find the best path in the map’s connectivity graph between the start and the goal, where best refers to the selected optimization criteria. In this section, we present several search algorithms that have become
-quite popular in mobile robotics.
-
-
+Suppose our environment map has been converted into a connectivity graph using one of the graph generation methods presented earlier. Whatever map representation we choose, the goal of path planning is to find the best path in the map’s connectivity graph between the start and the goal, where best refers to the selected optimization criteria. In this section, we present several popular search algorithms in mobile robotics.
 
 \subsection{Concepts in graph search}
-We introduce the concepts which are all function of the node n (and an adjacent node n0).
-g(n) : Path cost(accumulated cost from the start node to any given node n)
-c(n, n0) : Edge traversal cost(cost from a node n to an adjacent node n0)
-h(n) : Heuristic cost(expected cost from a node n to the goal node)
-f (n) : Expected total cost(from start to goal via state n)
-f (n) = g(n) + eh(n), where e is a parameter that assumes algorithm-dependent values.
+We introduce the concepts which are all functions of the node $n$ (and an adjacent node $n'$):
+\begin{itemize}
+    \item $g(n)$: Path cost (accumulated cost from the start node to any given node $n$).
+    
+    \item $C(n, n')$: Edge traversal cost (cost from a node $n$ to an adjacent node $n'$).
+    
+    \item $h(n)$: Heuristic cost (expected cost from a node $n$ to the goal node).
+    
+    \item$f(n)$: Expected total cost (from start to goal via state $n$).
+
+And $f(n) = g(n) + \epsilon h(n)$, where $\epsilon$ is a parameter that assumes algorithm-dependent values.
+\end{itemize}
 
 \subsection{Discriminator graph search}
-Heuristic function unemployed
-– Uniform traversal cost simpler form, obtain faster execution speeds 
-ex) depth-first, breadth-first
-– Nonuniform traversal cost higher algorithmic complexity
-ex) Dijkstra’s algorithm
-- Heuristic function employed incorporates additional information about the problem set and thus often allows for faster convergence of the search query.
-ex) e = 1 : optimal A* algorithm, e > 1 : suboptimal or greedy A* variant
+\begin{itemize}
+
+\item No heuristic function employed
+    \begin{itemize}
+    \item[-] Uniform traversal cost with a simpler form and obtains faster execution speeds. \\
+    e.g.) depth-first, breadth-first \\
+    \item[-] Nonuniform traversal cost with a higher algorithmic complexity.\\
+    e.g.) Dijkstra’s algorithm
+    \end{itemize}
+    
+
+\item Heuristic function employed 
+    \begin{itemize}
+    \item[-] Incorporates additional information about the problem set and thus often allows for faster convergence of the search query. \\
+    e.g.) $e = 1$: optimal A* algorithm, $e > 1$: sub-optimal or greedy A* variant
+\end{itemize}
+\end{itemize}
 
 \subsection{Various graph search algorithms}
-Depth-First Search
-Depth-first search expands each node up to the deepest level of the graph, until the node has no more successors. As those nodes are expanded, their branch is removed from the graph and the search backtracks by expanding the next neighboring node of the start node until its deepest level and so on.
-Depth-First Search stores only a single path from the start nodes for each node on the path, leading to a lower memory requirement. However, previously visited nodes might be visited and the algorithm might enter redundant paths.
+\subsubsection{Depth-First Search (DFS)}
+Depth-first search expands each node up to the deepest level of the graph, until the node has no more successors. As those nodes are expanded, their branch is removed from the graph and the search backtracks by expanding the next neighboring node of the start node until its deepest level and so on. DFS stores only a single path from the start nodes for each node on the path, leading to a lower memory requirement. However, previously visited nodes might be visited and the algorithm might enter redundant paths.
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics{fig15_8.PNG}
+\includegraphics[width=0.5\textwidth]{fig15_8.PNG}
 \caption{Depth First Search}
 \end{center}
 \end{figure}
 
-Breadth-First Search
-Breadth-first begins with the start node and explores all of its neighboring nodes. Then, for each of these nodes, it explores all their unexplored neighbors and so on.
-The search always returns the path with the fewest number of edges between the start and goal node.
+\subsubsection{Breadth-First Search (BFS)}
+Breadth-first search begins with the start node and explores all of its neighboring nodes. Then for each of these nodes, it explores all their unexplored neighbors and so on. This search always returns the path with the fewest number of edges between the start and goal node.
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics{fig15_9.PNG}
+\includegraphics[width=0.5\textwidth]{fig15_9.PNG}
 \caption{Breadth First Search}
 \end{center}
 \end{figure}
 
-Dijkstra’s algorithm (Best-First Search)
-Dijkstra’s algorithm is similar to Breadth-First search, except that edge costs may assume any positive value and the search still guarantees solution optimality. Dijkstra’s algorithm uses the concept of the heap, a specialized tree-based data structure and selects the next q as: q = argminq2QC(q))
+\subsubsection{Dijkstra’s Algorithm (Shortest Path First)}
+Dijkstra’s algorithm is similar to Breadth-first search, except that edge costs may assume any positive value and the search still guarantees solution optimality. Dijkstra’s algorithm uses the concept of the heap, a specialized tree-based data structure and selects the next $q$ as: $q = \textrm{arg} \min_{q \in Q} C(q)$
 
 \subsection{Label Correcting Algorithm}
-The label-correction algorithm is a general type of shortest path algorithm which includes very common graph search algorithms like breadth-first search, depth-first search, A*, Dijkstra’s algorithm as special cases.
-The idea is to progressively discover shorter paths from the origin to every other node q, and to maintain the lowest cost path(from qI to q) found so far in a variable C(q).
-
+The label-correction algorithm is a general type of shortest path algorithm which includes common graph search algorithms like breadth-first search, depth-first search, A*, Dijkstra’s algorithm as special cases.
+The idea is to progressively discover shorter paths from the origin to every other node $q$, and to maintain the lowest cost path (from $q_I$ to $q$) found so far in a variable $C(q)$.
+\vspace{3em}
 \begin{figure}[h]
 \begin{center}
-\includegraphics{fig15_10.PNG}
-\caption{Label Correcting}
+\includegraphics[width=0.8\textwidth]{fig15_10.PNG}
+\caption{Label Correcting Algorithm}
 \end{center}
 \end{figure}
-
-Algorithm Step
-Step1. Remove a node q from the frontier queue and for each child q0 of q, execute step 2
-Step2. If C(q) + C(q, q0) min(C(q0),UPPER), set C(q0) := C(q) + C(q, q0) and set q to be the parent of q0. In addition, if q0 6= qG, place q0 in frontier queue if it is not already there, while if q0 = qG, set UPPER to the new value C(q) + C(q, qG)
-Step3. If the frontier queue is empty, terminate, else go to step 1.
-Initialization : set the labels of all nodes to, except for the label of the origin node, which is set to 0.
-
+\newpage
+\textbf{Algorithm}:
+\vspace{-0.7em}
+\begin{itemize}
+    \item \textbf{Step 1}: Remove a node q from the frontier queue and for each child q0 of q, execute step 2.
+    \item \textbf{Step 2}: If $ C(q) + C(q, q') \leq \min(C(q'),\textrm{UPPER})$, set $ C(q') := C(q) + C(q, q')$ and set $q$ to be the parent of $q'$. In addition, if $q' \neq q_G$, place $q'$ in frontier queue if it is not already there, while if $q' = q_G$, set UPPER to the new value $C(q) + C(q, q_G)$
+    \item \textbf{Step 3}: If the frontier queue is empty, terminate, else go to step 1.
+    \item \textbf{Initialization}: Set the labels of all nodes to $\infty$, except the label of the origin node which is set to 0.
+\end{itemize}
+\vspace{-1em}
 
 \section{Correctness and Improvements}
 Label correcting algorithms are guaranteed to find the shortest feasible path from an initial state to a goal state, given one exists. This attribute gives rise to the Correctness Theorem. \vspace{-0.5cm}
@@ -515,7 +529,7 @@ The graph-based approaches are simple, easy to use, and fast for some problems. 
 \printbibliography
 
 \subsubsection*{Contributors}
-Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis, Jeremy Crowley\\
+Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis, Jeremy Crowley, Kaushik Ram Sadagopan\\
 Winter 2018: Ryan Richey, Hyoungju Seo, Ola Shorinwa, Josh Sullivan, Danning Sun
 
 \end{document}
