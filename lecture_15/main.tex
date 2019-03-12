@@ -79,20 +79,33 @@
 
 \lecture{15}{Combinatorial Motion Planning}{}
 
-\section{Introduction}
+\section{Introduction} \label{Introduction}
 
 A robot must show competence in reaching its goal position as efficiently as possible based on its knowledge and sensor values given a series of goal positions and a map of its environment. This task gives rise to the navigation or motion planning problem.
 
 \textbf{Robot motion planning}: compute a sequence of actions that drives a robot from an initial condition to a terminal condition while avoiding obstacles, satisfying kinematic and dynamic constraints, and possibly optimizing an objective function.
 
-Some examples of common motion planning problems may include steering autonomous vehicles, controlling humanoid robots, protein docking, and surgery planning.
+Understanding motion planning is very critical as it plays a major role in some common motion planning problems such as steering autonomous vehicles, controlling humanoid robots, protein docking, and surgery planning.
+
+In these notes, we will explore several key aspects of motion planning. In Section \ref{Introduction}, we will go into what motion planning is and the history behind it. In Section \ref{Configuration-Space}, we dive deeper into motion planning, exploring a configuration space in a 2D example and also how we plan by mapping out free and forbidden spaces. In Section \ref{Combinatorial Planning}, we will discuss one type of motion planning solution called combinatorial planning which does not make any approximations in the configuration space. In order for combinatorial planning to be possible, we must understand how to go about determining the roadmap a robot or agent can take given a map of the free space. This is accomplished via cell decomposition and explained in Section \ref{Cell Decomposition}. Another approach to motion planning is a grid based solution, which discretizies and approximates the world into grid blocks. In Section \ref{Graph-Search Algorithms} we explore graph-based solutions for finding the shortest paths between the start and end points such as Depth-First Search, Breadth-First Search, Dijkstra, and the more general Label Correcting Algorithm. Finally in Section \ref{Correctness and Improvements}, we will dive into a more efficient graph search algorithm which uses a heuristic function in order to search the grid state space more efficiently called A*.
+
+\begin{itemize}
+  \item Introduction and History of Motion Planning
+  \item Configuration Space
+  \item Combinatorial Planning 
+  \item Cell-Decomposition
+  \item Graph-Search Algorithms
+  \item Correctness and Improvements
+
+\end{itemize}
+
 
 \subsection{ History }
 
 The problem of motion planning was formally defined in the 1970s as mobile robots became more prevalent in industries. However, exact combinatorial solutions in discrete configuration spaces were not developed until the 1980s with the introduction of Breadth-First Search and Depth-First Search algorithms. Grid-based search algorithms such as A* and D* which was developed by Anthony Stentz followed in the mid-1990s \cite{bertsekas}. These methods worked well for simple motion planning problems but were subject to the curse of dimensionality for planning in high-dimensional state spaces. To address this challenge,
 sampling-based methods, notably Probability Road-Maps (PRM) and Rapidly-Exploring Random Trees (RRT), were developed in the late 1990s and deployed on real-time systems in the 2000s \cite{lavalle}. With the increasing complexity of robotic systems, solving motion planning problems in real-time has become a significant challenge. Hence, current research has focused on speeding up sampling-based methods through lazy dynamic programming and massive parallelization of search algorithms. 
 
-\section{Configuration-Space}
+\section{Configuration-Space} \label{Configuration-Space}
 In the context of robotic motion planning, we will first create a simple problem setup to define the variables of interest and introduce the proper nomenclature. First, consider a \textit{workspace} defined in 2D, $ \mathcal{W} \subseteq \mathbb{R}^2$, which effectively describes the world that is occupied by the robot, the obstacles, and potentially other agents in the system. Within this workspace, we define the robot as a rigid polygon, and we introduce the set of obstacles $\mathcal{O} \subset \mathcal{W}$ as a subset of the workspace shown in Fig 15.1.
 
 The rigid robot can be translated or rotated according to its own kinematic constraints. With these definitions established, we can qualitatively define the robotic motion planning problem as:
@@ -151,7 +164,7 @@ Compute the continuous path: $\tau : [0, 1]  \Rightarrow \{q \in \mathcal{C}|\ma
 
 We now have a formal mathematical definition for the robot motion planning problem. In order to simplify the procedure, we recast the problem from the real/physical space to the configuration space. The result is that the motion planning problem now becomes a path planning problem for a single point. We have not yet, however, set up an architecture for obtaining the point path solution. In the following sections, several solution methods will be highlighted which leverage the aforementioned advantages of working in the configuration space for motion planning.
 
-\section{Combinatorial Planning}
+\section{Combinatorial Planning} \label{Combinatorial Planning}
 The goal of combinatorial planning is to find paths through the configuration space without needing approximations. For example, Figure \ref{fig:15_4} represents a point robot in a plane. The key idea is to compute a roadmap, which is a graph in which each vertex is a configuration in $C_\text{free}$ and each edge is a path through $C_\text{free}$ that connects a pair of vertices.
 
 For low dimensional convex problems, this type of planning either provides \textit{exact} solutions or none if no feasible path exists. This can allow for better performance in some cases, compared to approximation-based methods.
@@ -177,7 +190,7 @@ The roadmap essentially provides a discrete representation of the continuous pro
 
 The typical approach involves cell decomposition. There are requirements that the cells be easy to traverse, the decomposition be easy to compute, and the cell adjacencies be straightforward to determine.
 
-\section{Cell Decomposition}
+\section{Cell Decomposition} \label{Cell Decomposition}
 In order to pick the roadmap the environment needs to be decomposed in a way where connectivity between subspaces of the environment is captured. The most widely used method for representing an environment is cell decomposition which entails making a discrete representation of the configuration space. Cell decomposition refers to a set algorithms that partitions $C_{free}$ into a finite set of regions called cells. Three properties should be satisfied by cell decomposition, to reduce motion planning problem to a graph search problem:
 
 \begin{enumerate}
@@ -227,7 +240,7 @@ must occur in the slices. Hence, the 3D cell decomposition can be developed incr
 \end{center}
 \end{figure}
 
-\section{Graph-Search Algorithms}
+\section{Graph-Search Algorithms} \label{Graph-Search Algorithms}
 Suppose our environment map has been converted into a connectivity graph using one of the graph generation methods presented earlier. Whatever map representation we choose, the goal of path planning is to find the best path in the map’s connectivity graph between the start and the goal, where best refers to the selected optimization criteria. In this section, we present several popular search algorithms in mobile robotics.
 
 \subsection{Concepts in graph search}
@@ -308,7 +321,7 @@ The idea is to progressively discover shorter paths from the origin to every oth
 \end{itemize}
 \vspace{-1em}
 
-\section{Correctness and Improvements}
+\section{Correctness and Improvements} \label{Correctness and Improvements}
 Label correcting algorithms are guaranteed to find the shortest feasible path from an initial state to a goal state, given one exists. This attribute gives rise to the Correctness Theorem. \vspace{-0.5cm}
 \paragraph{Theorem} If a feasible path exists from initial state $q_I$ to goal state $q_G$, then the algorithm terminates in finite time with path cost $C(q_G)$ equal to the optimal cost of traversal, $C^*(q_G)$.\\
 
@@ -523,13 +536,25 @@ The graph-based approaches are simple, easy to use, and fast for some problems. 
 \item These approaches don't scale well with robot degrees of freedom. Usually, we need to construct a grid with number of dimensions equal to the number of degrees of freedom of our robot. Thus, the number of gird cells increase exponentially, which also increases the number of neighbors of each vertex exponentially in the number of degrees of freedom. Thus, the graph-based approaches become less effective for high dimensional problems (more than 3 DOFs).
 \end{enumerate}
 
+\subsection{Further Reading}
 
+\textbf{Motion Planning Resources:}
+H. Choset, W. Burgard, S. Hutchinson, G. Kantor, L. E. Kavraki, K. Lynch, and S. Thrun, Principles of Robot Motion: Theory, Algorithms, and Implementation, MIT Press, April 2005.
 
+Jean-Claude Latombe, Robot Motion Planning, 1991, Kluwer Academic Publishers
+
+Mark de Berg; Marc van Kreveld; Mark Overmars & Otfried Schwarzkopf (2000). Computational Geometry (2nd revised ed.). Springer-Verlag. ISBN 978-3-540-65620-3. Chapter 13: Robot Motion Planning: pp. 267–290.
+
+\textbf{Graph Search Algorithm Resources:}
+
+Knuth, D.E. (1977). "A Generalization of Dijkstra's Algorithm". Information Processing Letters. 6 (1): 1–5
+
+Hart, P. E.; Nilsson, N. J.; Raphael, B. (1972). "Correction to "A Formal Basis for the Heuristic Determination of Minimum Cost Paths"". SIGART Newsletter. 37: 28–29
 
 \printbibliography
 
 \subsubsection*{Contributors}
-Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis, Jeremy Crowley, Kaushik Ram Sadagopan\\
+Winter 2019: Warren Cheng,  Junwu Zhang, Theo Diamandis, Jeremy Crowley, Laura Lee, Kaushik Ram Sadagopan\\
 Winter 2018: Ryan Richey, Hyoungju Seo, Ola Shorinwa, Josh Sullivan, Danning Sun
 
 \end{document}
